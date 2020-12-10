@@ -19,10 +19,11 @@ int main() {
 
 	TestRunner tr;
 	//RUN_TEST(tr, TestSexp::ExhaustiveCorrect); //passed
-	RUN_TEST(tr, TestSexp::ExhaustiveSpeed);
+	//RUN_TEST(tr, TestSexp::ExhaustiveSpeed);
 	//RUN_TEST(tr, TestSexp::CheckSpurious);
 	//RUN_TEST(tr, TestSexp::Correct);
 	//RUN_TEST(tr, TestWijn::Correct);
+	RUN_TEST(tr, TestiF2E::Correct);
 
 	return 0;
 }

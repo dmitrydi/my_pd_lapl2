@@ -266,29 +266,31 @@ iF2EG_ret iF2EGuaranteed(
 	do {
 		psum = 0;
 		++i;
+		Compensated::Neumaier<double> summator;
 		for (int64_t j = i*blk_size; j > (i-1)*blk_size; --j) {
-			psum += if2e.get_k(x1, x2, ksid, yd, j);
+			summator.Add(if2e.get_k(x1, x2, ksid, yd, j));
 		}
+		psum = summator.Get();
 		sum += psum;
 	} while (std::abs(psum) > numeric_limits<double>::min()*10);
 	return {sum, psum, i*blk_size};
 }
 
-void TestiF2E() {
-	const double u = 1;
+void Correct() {
+	const double u = 1.e-9;
 	const double ksiwd = 500;
 	const double ksied = 1000;
 	const double ksiede = 1000;
 	const double alpha = 0;
 	const double ywd = 500;
 	const double yed = 1000;
-	const double eps = 1e-8;
+	const double eps = 1e-14;
 	double x1 = -1.;
 	double x2 = x1 + 1./20.;
 	const double ksid = ksiwd;
 	const double yd = ywd;
 	double ans = LaplFunc::iF2E(u, ksiwd, ksied, ksiede, alpha, ywd, yed, eps/100.)(x1, x2, ksid, yd);
-	double expected = iF2EGuaranteed(
+	auto expected = iF2EGuaranteed(
 			u,
 			ksiwd,
 			ksied,
@@ -300,8 +302,9 @@ void TestiF2E() {
 			x1,
 			x2,
 			ksid,
-			yd).res;
-	ASSERT_CLOSE(ans, expected, eps);
+			yd);
+	cerr <<" k = " << expected.k << " ans = " << expected.res << endl;
+	ASSERT_CLOSE(ans, expected.res, eps);
 }
 }
 

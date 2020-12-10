@@ -51,7 +51,6 @@ struct Levin {
 	//sometimes 0.5 works better. The current estimate of the limit of the sequence is returned.
 		double val;
 		if (std::abs(omega) < TINY) {
-
 			val = sum;
 		} else {
 			int j;
