@@ -18,12 +18,13 @@ using namespace std;
 int main() {
 
 	TestRunner tr;
+	//RUN_TEST(tr, TestLevin::Stability); //passed
 	//RUN_TEST(tr, TestSexp::ExhaustiveCorrect); //passed
-	//RUN_TEST(tr, TestSexp::ExhaustiveSpeed);
-	//RUN_TEST(tr, TestSexp::CheckSpurious);
-	//RUN_TEST(tr, TestSexp::Correct);
-	//RUN_TEST(tr, TestWijn::Correct);
-	RUN_TEST(tr, TestiF2E::Correct);
+	//RUN_TEST(tr, TestSexp::ExhaustiveSpeed); //passed
+	//RUN_TEST(tr, TestSexp::CheckSpurious);//passed
+	//RUN_TEST(tr, TestSexp::Correct); //passed
+	//RUN_TEST(tr, TestWijn::Correct); //passed
+	//RUN_TEST(tr, TestiF2E::Correct); //passed
 
 	return 0;
 }

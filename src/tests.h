@@ -19,6 +19,10 @@
 #include <ctime>
 #include <utility>
 
+namespace TestLevin {
+void Stability();
+}
+
 namespace TestWijn {
 void Correct();
 void Speed();

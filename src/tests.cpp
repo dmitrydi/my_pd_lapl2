@@ -7,6 +7,29 @@
 
 #include "tests.h"
 
+namespace TestLevin {
+using namespace std;
+void Stability() {
+	auto func = [](int64_t m) {return numeric_limits<double>::min()*2.;};
+	const double eps = 1e-15;
+	const int64_t MAXITER = 1000;
+	double sum = 0.;
+	double omega;
+	double ans;
+	LevinSpace::Levin lev(MAXITER, eps);
+	const double beta = 1.;
+	for (int64_t r = 1; r < MAXITER; ++r) {
+		omega = func(r);
+		sum += omega;
+		ans = lev.next_safe(sum, omega, beta);
+		ASSERT(!isnan(ans));
+	}
+	ASSERT_CLOSE(sum, 999*func(1), 1.e-15);
+	cerr << ans << endl;
+	cerr << sum << endl;
+}
+}
+
 namespace TestWijn {
 using namespace std;
 void Correct() {
@@ -28,28 +51,14 @@ void Correct() {
 	mt19937 gen_ek(rd());
 	uniform_real_distribution<> dis_ek(0.1, 1.0);
 	uniform_real_distribution<> dis_yed(1.0, 10.0);
-	{ LOG_DURATION("TestWijn::Correct With uniform optimization")
-		for (int i = 0; i < 1000; ++i) {
-			double yed = dis_yed(gen_yed);
-			double ek = dis_ek(gen_ek);
-			Func fun(yed, ek);
-			for (int64_t r = 1; r <= 1000; ++r) {
-				double res = Wijn::SumNeum(fun, r);
-				ASSERT(!isnan(res));
-				ASSERT(!isinf(res));
-			}
-		}
-	}
-	{ LOG_DURATION("TestWijn::Correct Without uniform optimization")
-		for (int i = 0; i < 1000; ++i) {
-			double yed = dis_yed(gen_yed);
-			double ek = dis_ek(gen_ek);
-			Func fun(yed, ek);
-			for (int64_t r = 1; r <= 1000; ++r) {
-				double res = Wijn::SumNeum(fun, r);
-				ASSERT(!isnan(res));
-				ASSERT(!isinf(res));
-			}
+	for (int i = 0; i < 1000; ++i) {
+		double yed = dis_yed(gen_yed);
+		double ek = dis_ek(gen_ek);
+		Func fun(yed, ek);
+		for (int64_t r = 1; r <= 1000; ++r) {
+			double res = Wijn::SumNeum(fun, r);
+			ASSERT(!isnan(res));
+			ASSERT(!isinf(res));
 		}
 	}
 }
