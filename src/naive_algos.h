@@ -12,6 +12,8 @@
 #include <numeric>
 #include <iterator>
 #include <iostream>
+#include <quadmath.h>
+
 
 namespace Compensated {
 
@@ -80,6 +82,16 @@ public:
 	}
 private:
 	T sum, c;
+};
+
+
+class NeumaierQuad {
+public:
+	NeumaierQuad();
+	void Add(const __float128 input);
+	__float128 Get() const;
+private:
+	__float128 sum, c;
 };
 
 }

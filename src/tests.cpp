@@ -7,6 +7,162 @@
 
 #include "tests.h"
 
+std::ostream& operator<<(std::ostream& os, __float128 x) {
+	int prec = 20;
+	int width = 27;
+	char buf[128];
+	int n = quadmath_snprintf (buf, sizeof buf, "%#*.17Qe", width, x); //"%+-#*.17Qe"
+	if ((size_t) n < sizeof buf) {
+	 os << buf;
+	 return os;
+	}
+	return os;
+}
+
+namespace TestIntegrals {
+using namespace std;
+struct Func {
+	Func(){};
+	Bessik bess;
+	double operator()(double x) {return bess.k0(x); };
+};
+
+void QrombOverIbessk0() {
+	int NSEG = 20, N = 1000;
+	double dx = 1./NSEG;
+	double EPS = 1.e-14;
+	vector<double> xs = LogSpaced(dx, 100., N);
+
+	Func f;
+	for (auto x: xs) {
+		__float128 romb_ans = qromb(f, x, x+dx, EPS);
+		__float128 analytic = ibessk0ab_q(x, x+dx);
+		auto epss = fabsq(romb_ans-analytic)/analytic;
+		cerr <<"x = " << x << " qromb = " << romb_ans << "series = " << analytic << " eps = " << epss << endl;
+	}
+}
+
+void Speed() {
+	int NSEG = 20, N = 100;
+	double dx = 1./NSEG;
+	double EPS = 1.e-14;
+	vector<double> xs = LogSpaced(dx, 10., N);
+	int NITER = 1000;
+	double romb_ans, analyticq ,analyticd;
+	Func f;
+	for (auto x: xs) {
+		cerr << "x = " << x << endl;
+		{LOG_DURATION("qromb");
+			for (int i = 0; i < NITER; ++i) {
+				romb_ans = qromb(f, x, x+dx, EPS);
+			}
+		}
+		{LOG_DURATION("analytic quad");
+			for (int i = 0; i < NITER; ++i) {
+				analyticq = ibessk0q(x+dx) - ibessk0q(x);
+			}
+		}
+		{LOG_DURATION("analytic double");
+			for (int i = 0; i < NITER; ++i) {
+				analyticd = ibessk0d(x+dx) - ibessk0d(x);
+			}
+		}
+		cerr << "eps quad = " << abs(romb_ans - analyticq)/analyticq << endl;
+		cerr << "eps double = " << abs(romb_ans - analyticd)/analyticd << endl;
+	}
+	cerr << romb_ans << " " << analyticq << endl;
+}
+}
+
+namespace TestBessel{
+using namespace std;
+void Precision() {
+	random_device rd;  //Will be used to obtain a seed for the random number engine
+	mt19937 gen_x(rd()); //Standard mersenne_twister_engine seeded with rd()
+	uniform_real_distribution<> dis_x(0.1, 10.0);
+	const int N = 1000000;
+	double eps = 0.;
+	Bessik bess;
+	for (int i = 0; i <N; ++i) {
+		double x = dis_x(gen_x);
+		double cans = cyl_bessel_k(0., x);
+		double ans = bess.k0(x);
+		double epss = abs(cans-ans)/cans;
+		if (epss > eps) eps = epss;
+	}
+	cerr <<eps << endl;
+}
+void Speed() {
+	random_device rd;  //Will be used to obtain a seed for the random number engine
+	mt19937 gen_x(rd()); //Standard mersenne_twister_engine seeded with rd()
+	uniform_real_distribution<> dis_x(0.1, 10.0);
+	vector<double> xs;
+	const int N = 1'000'000;
+	double _x;
+	for (int i = 0; i <N; ++i) {
+		xs.push_back( dis_x(gen_x));
+	}
+	{
+	LOG_DURATION("cmath");
+	for (auto x: xs) {
+		_x = cyl_bessel_k(0., x);
+	}
+	}
+	{
+	LOG_DURATION("custom");
+	Bessik bess;
+	for (auto x: xs) {
+		_x = bess.k0(x);
+	}
+	}
+	cerr << _x << endl;
+}
+}
+
+namespace TestIbessk0 {
+using namespace std;
+void Precision_f() {
+	ofstream out("./src/test_results/Test_Ibessk0_Precision_f.txt");
+	int width = 28;
+	if (out) {
+		out << "Compares mutal precision of (double) ibessk0d and (__float128) ibessk0q\n";
+		out << setw(width) << "x"<< setw(width) << "double"<< setw(width) << "quad" << setw(width) << "eps\n";
+		vector<double> xs = LinSpaced(1., 40., 400);
+		for (double x: xs) {
+			double id = ibessk0d(x);
+			__float128 iq = ibessk0q(x);
+			double eps = abs(id - (double)iq)/((double)iq);
+			out<< setw(width) << setprecision(6) <<fixed << x << setw(width) <<scientific << setprecision(17) << id<< setw(width) << iq;
+			out << setw(width) <<scientific << setprecision(17) << eps << endl;
+		}
+	}
+}
+
+void Precision_ab() {
+	ofstream out("./src/test_results/Test_Ibessk0_Precision_ab.txt");
+	int width = 28;
+	if (out) {
+		out << "Compares mutal precision of (double) ibessk0ab_d and (__float128) ibessk0ab_d for different x ans dx\n";
+		out << setw(width/2) << "x" << setw(width/2) << "dx" << setw(width) << "double"<< setw(width) << "quad" << setw(width) << "eps\n";
+		vector<double> dxs = LogSpaced(0.01, 1000., 20);
+		vector<double> xs = LogSpaced(0.01, 40., 20);
+		for (double x: xs) {
+			out << "----------------------\n";
+			for (double dx: dxs) {
+				double dbl_ans = ibessk0ab_d(x, x+dx);
+				__float128 quad_ans = ibessk0ab_q(x, x+dx);
+				double eps = abs(dbl_ans - (double)quad_ans)/((double)quad_ans);
+				if (eps > 1e-14) {
+					out << setw(width/2) << setprecision(6) <<fixed << x << setw(width/2) << dx;
+					out << setw(width) <<scientific << setprecision(17) << dbl_ans << setw(width) << quad_ans;
+					out << setw(width) <<scientific << setprecision(17) << eps << endl;
+				}
+			}
+		}
+	}
+}
+}
+
 namespace TestLevin {
 using namespace std;
 void Stability() {

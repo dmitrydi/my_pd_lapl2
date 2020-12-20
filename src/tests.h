@@ -10,6 +10,8 @@
 #include "test_runner.h"
 #include "auxillary.h"
 #include "profile.h"
+#include "bessel.h"
+#include "quadrature.h"
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -18,6 +20,24 @@
 #include <random>
 #include <ctime>
 #include <utility>
+#include <iomanip>
+
+std::ostream& operator<<(std::ostream& os, __float128 x);
+
+namespace TestIntegrals {
+void QrombOverIbessk0();
+void Speed();
+}
+
+namespace TestBessel{
+void Speed();
+void Precision();
+}
+
+namespace TestIbessk0 {
+void Precision_f();
+void Precision_ab();
+}
 
 namespace TestLevin {
 void Stability();

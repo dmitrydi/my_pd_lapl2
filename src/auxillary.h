@@ -22,3 +22,12 @@ std::vector<T> LogSpaced(const T min, const T max, const int steps) {
 	return ans;
 }
 
+template <typename T>
+std::vector<T> LinSpaced(const T min, const T max, const int steps) {
+	std::vector<double> ans(steps);
+	double d = (max - min)/(steps - 1);
+	for (int i = 0; i < steps; ++i) {
+		ans[i] = min + i*d;
+	}
+	return ans;
+}

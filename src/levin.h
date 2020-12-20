@@ -234,7 +234,7 @@ double LevinUSum(const F& func, const bool from_zero_i = false, const double eps
 }
 
 template <typename F>
-double LevinDSum(const F& func, const bool from_zero_i = false, const double eps = EPS) {
+double LevinDSum(const F& func, const bool from_zero_i = false, const double eps = EPS, const bool verbose=false) {
 	Levin lev(LEVIN_MAXITER, eps);
 	double sum = from_zero_i ? func(0): 0.;
 	double ans;
